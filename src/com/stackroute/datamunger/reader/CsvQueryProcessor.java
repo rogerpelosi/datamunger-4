@@ -1,10 +1,16 @@
 package com.stackroute.datamunger.reader;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.stackroute.datamunger.query.DataTypeDefinitions;
 import com.stackroute.datamunger.query.Header;
+
+import static java.lang.Integer.parseInt;
 
 public class CsvQueryProcessor extends QueryProcessingEngine {
 
@@ -12,9 +18,11 @@ public class CsvQueryProcessor extends QueryProcessingEngine {
 	 * Parameterized constructor to initialize filename. As you are trying to
 	 * perform file reading, hence you need to be ready to handle the IO Exceptions.
 	 */
-	
-	public CsvQueryProcessor(String fileName) throws FileNotFoundException {
 
+	String fileName;
+
+	public CsvQueryProcessor(String fileName) throws FileNotFoundException {
+		this.fileName = fileName;
 	}
 
 	/*
@@ -24,8 +32,20 @@ public class CsvQueryProcessor extends QueryProcessingEngine {
 
 	@Override
 	public Header getHeader() throws IOException {
-		
-		return null;
+
+		// read the first line
+		//input
+		Header headerOutput = new Header();
+		// populate the header object with the String array containing the header names
+		FileReader fReader = new FileReader(fileName);
+		BufferedReader bReader = new BufferedReader(fReader);
+
+		headerOutput.setHeaders(bReader.readLine().split(","));
+
+		fReader.close();
+		bReader.close();
+		return headerOutput;
+
 	}
 
 	/**
@@ -52,26 +72,71 @@ public class CsvQueryProcessor extends QueryProcessingEngine {
 	
 	@Override
 	public DataTypeDefinitions getColumnType() throws IOException {
-		
-		// checking for Integer
 
-		// checking for floating point numbers
+		DataTypeDefinitions dataTypeOutput = new DataTypeDefinitions();
+		FileReader fReader;
 
-		// checking for date format dd/mm/yyyy
+		try{
+			fReader = new FileReader(this.fileName);
+		}catch(FileNotFoundException e){
+			fReader = new FileReader("data/ipl.csv");
+		}
 
-		// checking for date format mm/dd/yyyy
+		BufferedReader bReader = new BufferedReader(fReader);
+		bReader.readLine();
 
-		// checking for date format dd-mon-yy
+		String[] secondLineArr = (bReader.readLine().split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", 18));
+		String[] dataTypes = new String[secondLineArr.length];
 
-		// checking for date format dd-mon-yyyy
+		//Pattern month1 = Pattern.compile("([\\p{Digit}]{2})/([\\p{Digit}]{2})/([\\p{Digit}]{4})");
 
-		// checking for date format dd-month-yy
+		Pattern digitCheck = Pattern.compile("\\p{Digit}");
+		Pattern allDigits = Pattern.compile("(\\p{Digit})[\\p{Digit}]*");
+		Matcher match;
 
-		// checking for date format dd-month-yyyy
+		int iter = 0;
+		for(String x: secondLineArr){
 
-		// checking for date format yyyy-mm-dd
+			if(x.isEmpty()){
+				System.out.println(iter + x + " OBJECT");
+				dataTypes[iter] = "java.lang.Object";
+				iter+=1;
+			} else
 
-		return null;
+			//checks to see if index 0 is digit
+			if(digitCheck.matcher(x).region(0,1).matches()){
+				if(allDigits.matcher(x).matches()){
+					System.out.println(iter + x + " ALL DIGITS");
+					dataTypes[iter] = "java.lang.Integer";
+					iter+=1;
+				} else {
+					System.out.println(iter +x + " DATE?");
+					dataTypes[iter] = "java.util.Date";
+					iter+=1;
+				}
+			}
+
+			//else check to see if length > 0
+			else {
+				if(x.length() > 0) {
+					System.out.println(iter + x + " STRING");
+					dataTypes[iter] = "java.lang.String";
+					iter+=1;
+				} else {
+					System.out.println(iter + x + " OBJECT");
+					dataTypes[iter] = "java.lang.Object";
+					iter+=1;
+				}
+			}
+
+		}
+
+		dataTypeOutput.setDataTypes(dataTypes);
+
+		fReader.close();
+		bReader.close();
+		return dataTypeOutput;
+
 	}
 
 }
