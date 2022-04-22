@@ -13,7 +13,32 @@ import com.stackroute.datamunger.query.Header;
 import static java.lang.Integer.parseInt;
 
 public class CsvQueryProcessor extends QueryProcessingEngine {
+/*
+	FileReader fReader;
+	BufferedReader bReader;
 
+	public CsvQueryProcessor(String fileName) throws FileNotFoundException {
+
+		try{
+			fReader = new FileReader(fileName); //initializes fReader and opens resource
+			bReader = new BufferedReader(fReader); //initializes bReader and opens resource
+		}catch(FileNotFoundException e){
+			fReader = new FileReader("data/ipl.csv");
+			bReader = new BufferedReader(fReader);
+		}
+
+		--> resources must be closed somewhere, once the instance of CsvQueryProcessor is done being used, but if closed within
+		individual methods, then you cannot call another method from CsvQueryProcessor instance because they were just closed for
+		that specific instance of the CsvQueryProcessor
+
+		--> thought around this is to create variables (ie String[] Arrays named firstLine secondLine) in general class,
+		then in constructor (here) initialize those variables with the values obtained from splitting bReader.readLine()-
+		with both the first line and second line. Thus, in the individual methods, you can use those members (String[])
+		as opposed to the output of reading a line from bReader, etc. individually. And then close the resources in the constructor
+		itself so no subsequent CsvQueryProcessor methods need the open resource
+
+	}
+*/
 	/*
 	 * Parameterized constructor to initialize filename. As you are trying to
 	 * perform file reading, hence you need to be ready to handle the IO Exceptions.
@@ -126,3 +151,5 @@ public class CsvQueryProcessor extends QueryProcessingEngine {
 	}
 
 }
+
+
