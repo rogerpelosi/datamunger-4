@@ -18,10 +18,9 @@ public class CsvQueryProcessor extends QueryProcessingEngine {
 	 * Parameterized constructor to initialize filename. As you are trying to
 	 * perform file reading, hence you need to be ready to handle the IO Exceptions.
 	 */
-
 	String fileName;
-
 	public CsvQueryProcessor(String fileName) throws FileNotFoundException {
+		FileReader fr = new FileReader(fileName);
 		this.fileName = fileName;
 	}
 
@@ -29,15 +28,18 @@ public class CsvQueryProcessor extends QueryProcessingEngine {
 	 * Implementation of getHeader() method. We will have to extract the headers
 	 * from the first line of the file.
 	 */
-
 	@Override
 	public Header getHeader() throws IOException {
 
-		// read the first line
-		//input
 		Header headerOutput = new Header();
-		// populate the header object with the String array containing the header names
-		FileReader fReader = new FileReader(fileName);
+		FileReader fReader;
+
+		try{
+			fReader = new FileReader(this.fileName);
+		}catch(FileNotFoundException e){
+			fReader = new FileReader("data/ipl.csv");
+		}
+
 		BufferedReader bReader = new BufferedReader(fReader);
 
 		headerOutput.setHeaders(bReader.readLine().split(","));
@@ -69,7 +71,6 @@ public class CsvQueryProcessor extends QueryProcessingEngine {
 	 * 'mm/dd/yyyy','dd-mon-yy','dd-mon-yyyy','dd-month-yy','dd-month-yyyy','yyyy-mm
 	 * -dd')
 	 */
-	
 	@Override
 	public DataTypeDefinitions getColumnType() throws IOException {
 
@@ -92,19 +93,14 @@ public class CsvQueryProcessor extends QueryProcessingEngine {
 
 		Pattern digitCheck = Pattern.compile("\\p{Digit}");
 		Pattern allDigits = Pattern.compile("(\\p{Digit})[\\p{Digit}]*");
-		Matcher match;
 
 		int iter = 0;
 		for(String x: secondLineArr){
-
 			if(x.isEmpty()){
 				System.out.println(iter + x + " OBJECT");
 				dataTypes[iter] = "java.lang.Object";
 				iter+=1;
-			} else
-
-			//checks to see if index 0 is digit
-			if(digitCheck.matcher(x).region(0,1).matches()){
+			} else if(digitCheck.matcher(x).region(0,1).matches()){
 				if(allDigits.matcher(x).matches()){
 					System.out.println(iter + x + " ALL DIGITS");
 					dataTypes[iter] = "java.lang.Integer";
@@ -114,21 +110,11 @@ public class CsvQueryProcessor extends QueryProcessingEngine {
 					dataTypes[iter] = "java.util.Date";
 					iter+=1;
 				}
+			} else {
+				System.out.println(iter + x + " STRING");
+				dataTypes[iter] = "java.lang.String";
+				iter+=1;
 			}
-
-			//else check to see if length > 0
-			else {
-				if(x.length() > 0) {
-					System.out.println(iter + x + " STRING");
-					dataTypes[iter] = "java.lang.String";
-					iter+=1;
-				} else {
-					System.out.println(iter + x + " OBJECT");
-					dataTypes[iter] = "java.lang.Object";
-					iter+=1;
-				}
-			}
-
 		}
 
 		dataTypeOutput.setDataTypes(dataTypes);
